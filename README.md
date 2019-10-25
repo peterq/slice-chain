@@ -31,6 +31,6 @@ got output:
 4 * 4 = 16
 ```
 
-issue and pr is welcomed ;)
+issue and pr are welcomed ;)
 
 love golang, love china. may the world peace :)
