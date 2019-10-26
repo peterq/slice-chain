@@ -8,6 +8,11 @@ import (
 	"unsafe"
 )
 
+type anyTyp struct {
+}
+
+var anyType = reflect.TypeOf(anyTyp{})
+
 type Collection struct {
 	arr []interface{}
 	typ reflect.Type
@@ -92,6 +97,23 @@ func (a Collection) Reverse() Collection {
 	return to
 }
 
+func (a Collection) Reduce(iv interface{}, to interface{}, fn interface{}) {
+	rf := checkFn(fn, []reflect.Type{anyType, a.typ, reflect.TypeOf(0)},
+		[]reflect.Type{reflect.TypeOf([]interface{}{}).Elem()})
+	if !rf.Type().Out(0).AssignableTo(rf.Type().In(0)) {
+		panic(fmt.Sprintf("return type must assignable to prev type, but %v cant assign to %v", rf.Type().Out(0), rf.Type().In(0)))
+	}
+	ri := reflect.ValueOf(iv)
+	if !ri.Type().AssignableTo(rf.Type().In(0)) {
+		panic("init value type must assignable to prev type")
+	}
+	dest := reflect.Indirect(reflect.ValueOf(to))
+	dest.Set(reflect.ValueOf(iv))
+	for idx, v := range a.arr {
+		dest.Set(rf.Call([]reflect.Value{dest, reflect.ValueOf(v), reflect.ValueOf(idx)})[0])
+	}
+}
+
 func (a Collection) SaveTo(ptr interface{}) {
 	rp := reflect.ValueOf(ptr)
 	if rp.Type().Kind() != reflect.Ptr {
@@ -134,12 +156,12 @@ func checkFn(fn interface{}, in []reflect.Type, out []reflect.Type) reflect.Valu
 		panic(fmt.Sprintf("need %d out param(s), got %d", len(out), rf.Type().NumOut()))
 	}
 	for i, t := range in {
-		if !t.AssignableTo(rf.Type().In(i)) {
+		if !t.AssignableTo(rf.Type().In(i)) && t != anyType {
 			panic(fmt.Sprintf("in param with the index %d need %v, got %v", i, t, rf.Type().In(i)))
 		}
 	}
 	for i, t := range out {
-		if !rf.Type().Out(i).AssignableTo(t) {
+		if !rf.Type().Out(i).AssignableTo(t) && t != anyType {
 			panic(fmt.Sprintf("out param with the index %d need %v, got %v", i, t, rf.Type().In(i)))
 		}
 	}

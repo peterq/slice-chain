@@ -70,8 +70,14 @@ func TestSaveToInterface(t *testing.T) {
 // sort struct
 func TestCollection_Sort(t *testing.T) {
 	var s = []A{{5}, {3}, {1}, {3}, {4}}
-	Collect(s).Sort(func(l, r intable) bool { return l.Int() > r.Int() }).SaveTo(&s)
-	t.Log(s)
+	Collect(s).Sort(func(l, r intable) bool { return l.Int() < r.Int() }).SaveTo(&s)
+	last := s[0].a
+	for _, v := range s {
+		if v.a < last {
+			t.Fail()
+		}
+		last = v.a
+	}
 }
 
 // find element and index
@@ -88,6 +94,16 @@ func TestCollection_Reverse(t *testing.T) {
 	var s = []string{"a", "b", "c"}
 	Collect(s).Reverse().SaveTo(&s)
 	if strings.Join(s, "") != "cba" {
+		t.Fail()
+	}
+}
+
+func TestCollection_Reduce(t *testing.T) {
+	var r int
+	Collect([]A{{1}, {2}, {3}, {4}, {5}}).
+		Reduce(1, &r, func(prev int, cur intable, idx int) int { return prev * cur.Int() })
+
+	if r != 120 {
 		t.Fail()
 	}
 }
