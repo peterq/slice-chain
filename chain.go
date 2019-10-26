@@ -28,16 +28,8 @@ func Collect(src interface{}) Collection {
 }
 
 func (a Collection) Map(fn interface{}) Collection {
-	rFn := reflect.ValueOf(fn)
-	if rFn.Type().Kind() != reflect.Func {
-		panic("fn is not func")
-	}
-	if rFn.Type().NumIn() != 1 || rFn.Type().NumOut() != 1 {
-		panic("fn in out param number must be one")
-	}
-	if rFn.Type().In(0) != a.typ {
-		panic("fn in param type invalid")
-	}
+	rFn := checkFn(fn, []reflect.Type{a.typ}, []reflect.Type{reflect.TypeOf([]interface{}{}).Elem()})
+
 	to := Collection{
 		typ: rFn.Type().Out(0),
 	}
@@ -49,19 +41,7 @@ func (a Collection) Map(fn interface{}) Collection {
 }
 
 func (a Collection) Filter(fn interface{}) Collection {
-	rFn := reflect.ValueOf(fn)
-	if rFn.Type().Kind() != reflect.Func {
-		panic("fn is not func")
-	}
-	if rFn.Type().NumIn() != 1 || rFn.Type().NumOut() != 1 {
-		panic("fn in out param number must be one")
-	}
-	if rFn.Type().In(0) != a.typ {
-		panic("fn in param type invalid")
-	}
-	if rFn.Type().Out(0).Kind() != reflect.Bool {
-		panic("fn out param type is not bool")
-	}
+	rFn := checkFn(fn, []reflect.Type{a.typ}, []reflect.Type{reflect.TypeOf(false)})
 	to := Collection{
 		typ: a.typ,
 	}
