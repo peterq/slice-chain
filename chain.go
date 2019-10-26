@@ -97,13 +97,13 @@ func checkFn(fn interface{}, in []reflect.Type, out []reflect.Type) reflect.Valu
 		panic(fmt.Sprintf("need %d out param(s), got %d", len(out), rf.Type().NumOut()))
 	}
 	for i, t := range in {
-		if rf.Type().In(i) != t {
-			panic(fmt.Sprintf("in param with the index %d need %v, got ,%v", i, t, rf.Type().In(i)))
+		if !t.AssignableTo(rf.Type().In(i)) {
+			panic(fmt.Sprintf("in param with the index %d need %v, got %v", i, t, rf.Type().In(i)))
 		}
 	}
 	for i, t := range out {
-		if rf.Type().Out(i) != t {
-			panic(fmt.Sprintf("out param with the index %d need %v, got ,%v", i, t, rf.Type().In(i)))
+		if !rf.Type().Out(i).AssignableTo(t) {
+			panic(fmt.Sprintf("out param with the index %d need %v, got %v", i, t, rf.Type().In(i)))
 		}
 	}
 	return rf

@@ -22,9 +22,18 @@ func TestChain(t *testing.T) {
 	}
 }
 
+type intable interface {
+	Int() int
+}
+
 type A struct {
 	a int
 }
+
+func (a A) Int() int {
+	return a.a
+}
+
 type B struct {
 	c int
 }
@@ -61,6 +70,6 @@ func TestSaveToInterface(t *testing.T) {
 // sort struct
 func TestCollection_Sort(t *testing.T) {
 	var s = []A{{5}, {3}, {1}, {3}, {4}}
-	Collect(s).Sort(func(l, r A) bool { return l.a > r.a }).SaveTo(&s)
+	Collect(s).Sort(func(l, r intable) bool { return l.Int() > r.Int() }).SaveTo(&s)
 	t.Log(s)
 }
