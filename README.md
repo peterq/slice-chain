@@ -2,7 +2,13 @@
 像 JavaScript 操作数组一样链式操作 golang 的slice
 
 
-run:
+support operation:
+ - Map:    convert slice of any type A to slice of any type B; 从一种类型的切片转换成另一种类型的切片
+ - Filter: delete elements of a slice you do not need; 过滤切片中不符合条件的元素, 返回新的切片
+ - Sort:   sort a slice of any type on your rule; 自定义规则对切片进行排序
+ - Find:   find the element in the slice you need; 找出切片中符合条件的第一个元素, 返回该元素和该元素的索引
+
+eg: run:
 ```go
 package main
 
@@ -30,6 +36,9 @@ got output:
 2 * 2 = 4
 4 * 4 = 16
 ```
+
+> more usage you can find in the `chain_test.go` file
+
 
 issue and pr are welcomed ;)
 

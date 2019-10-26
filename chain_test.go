@@ -73,3 +73,13 @@ func TestCollection_Sort(t *testing.T) {
 	Collect(s).Sort(func(l, r intable) bool { return l.Int() > r.Int() }).SaveTo(&s)
 	t.Log(s)
 }
+
+// find element and index
+func TestCollection_Find(t *testing.T) {
+	var a intable
+	var idx = Collect([]A{{5}, {3}, {1}, {3}, {4}}).
+		Find(0, func(a A) bool { return a.a == 3 }, &a)
+	if idx != 1 || a.Int() != 3 {
+		t.Fail()
+	}
+}

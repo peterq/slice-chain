@@ -65,6 +65,45 @@ func (a Collection) Sort(fn interface{}) Collection {
 	return a
 }
 
+func (a Collection) Find(startIndex int, fn interface{}, target interface{}) (index int) {
+	index = -1
+	rFn := checkFn(fn, []reflect.Type{a.typ}, []reflect.Type{reflect.TypeOf(false)})
+	dest := reflect.Indirect(reflect.ValueOf(target))
+	for i, v := range a.arr {
+		if i < startIndex {
+			continue
+		}
+		ret := rFn.Call([]reflect.Value{reflect.ValueOf(v)})
+		if ret[0].Bool() {
+			index = i
+			dest.Set(reflect.ValueOf(v))
+			break
+		}
+	}
+	return
+}
+
+func (a Collection) SaveTo(ptr interface{}) {
+	rp := reflect.ValueOf(ptr)
+	if rp.Type().Kind() != reflect.Ptr {
+		panic("ptr is not ptr")
+	}
+	if rp.Elem().Type().Elem() != a.typ && // type equal
+		!(rp.Elem().Type().Elem().Kind() == reflect.Interface && // impl interface
+			a.typ.Implements(rp.Elem().Type().Elem())) {
+		log.Println(rp.Elem().Type(), a.typ)
+		panic("slice element type invalid ")
+	}
+	newSlice := reflect.MakeSlice(rp.Type().Elem(), 0, 0)
+	for _, v := range a.arr {
+		newSlice = reflect.Append(newSlice, reflect.ValueOf(v))
+	}
+	dst := (*reflect.SliceHeader)(unsafe.Pointer(reflect.ValueOf(ptr).Pointer()))
+	dst.Data = newSlice.Pointer()
+	dst.Len = len(a.arr)
+	dst.Cap = cap(a.arr)
+}
+
 func checkFn(fn interface{}, in []reflect.Type, out []reflect.Type) reflect.Value {
 	rf := reflect.ValueOf(fn)
 	if rf.Kind() != reflect.Func {
@@ -87,25 +126,4 @@ func checkFn(fn interface{}, in []reflect.Type, out []reflect.Type) reflect.Valu
 		}
 	}
 	return rf
-}
-
-func (a Collection) SaveTo(ptr interface{}) {
-	rp := reflect.ValueOf(ptr)
-	if rp.Type().Kind() != reflect.Ptr {
-		panic("ptr is not ptr")
-	}
-	if rp.Elem().Type().Elem() != a.typ && // type equal
-		!(rp.Elem().Type().Elem().Kind() == reflect.Interface && // impl interface
-			a.typ.Implements(rp.Elem().Type().Elem())) {
-		log.Println(rp.Elem().Type(), a.typ)
-		panic("slice element type invalid ")
-	}
-	newSlice := reflect.MakeSlice(rp.Type().Elem(), 0, 0)
-	for _, v := range a.arr {
-		newSlice = reflect.Append(newSlice, reflect.ValueOf(v))
-	}
-	dst := (*reflect.SliceHeader)(unsafe.Pointer(reflect.ValueOf(ptr).Pointer()))
-	dst.Data = newSlice.Pointer()
-	dst.Len = len(a.arr)
-	dst.Cap = cap(a.arr)
 }
