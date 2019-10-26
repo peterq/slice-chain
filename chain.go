@@ -77,9 +77,11 @@ func (a Collection) SaveTo(ptr interface{}) {
 	if rp.Type().Kind() != reflect.Ptr {
 		panic("ptr is not ptr")
 	}
-	if rp.Elem().Type().Elem() != a.typ {
+	if rp.Elem().Type().Elem() != a.typ && // type equal
+		!(rp.Elem().Type().Elem().Kind() == reflect.Interface && // impl interface
+			a.typ.Implements(rp.Elem().Type().Elem())) {
 		log.Println(rp.Elem().Type(), a.typ)
-		panic("slice element type invalid")
+		panic("slice element type invalid ")
 	}
 	newSlice := reflect.MakeSlice(rp.Type().Elem(), 0, 0)
 	for _, v := range a.arr {

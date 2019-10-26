@@ -7,6 +7,7 @@ import (
 	"testing"
 )
 
+// string slice -> int slice -> string slice
 func TestChain(t *testing.T) {
 	var a = []string{"1", "2", "3", "4", "5"}
 
@@ -36,6 +37,23 @@ func TestStructSlice(t *testing.T) {
 	Collect(aa).Map(func(a A) B { return B{a.a} }).SaveTo(&bb)
 
 	if bb[2].c != 3 {
+		t.Fail()
+	}
+}
+
+type ia interface {
+	a()
+}
+type a int
+
+func (a) a() {
+}
+
+// convert real type slice to interface slice type
+func TestSaveToInterface(t *testing.T) {
+	var s []ia
+	Collect([]a{1, 3, 4, 5}).SaveTo(&s)
+	if len(s) != 4 {
 		t.Fail()
 	}
 }
