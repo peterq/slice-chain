@@ -56,13 +56,14 @@ func (a Collection) Filter(fn interface{}) Collection {
 
 func (a Collection) Sort(fn interface{}) Collection {
 	rf := checkFn(fn, []reflect.Type{a.typ, a.typ}, []reflect.Type{reflect.TypeOf(false)})
-	sort.Slice(a.arr, func(i, j int) bool {
-		l := a.arr[i]
-		r := a.arr[j]
+	to := a.copy()
+	sort.Slice(to.arr, func(i, j int) bool {
+		l := to.arr[i]
+		r := to.arr[j]
 		ret := rf.Call([]reflect.Value{reflect.ValueOf(l), reflect.ValueOf(r)})
 		return ret[0].Bool()
 	})
-	return a
+	return to
 }
 
 func (a Collection) Find(startIndex int, fn interface{}, target interface{}) (index int) {
@@ -81,6 +82,14 @@ func (a Collection) Find(startIndex int, fn interface{}, target interface{}) (in
 		}
 	}
 	return
+}
+
+func (a Collection) Reverse() Collection {
+	to := a.copy()
+	for i, j := 0, len(to.arr)-1; i < j; i, j = i+1, j-1 {
+		to.arr[i], to.arr[j] = to.arr[j], to.arr[i]
+	}
+	return to
 }
 
 func (a Collection) SaveTo(ptr interface{}) {
@@ -102,6 +111,15 @@ func (a Collection) SaveTo(ptr interface{}) {
 	dst.Data = newSlice.Pointer()
 	dst.Len = len(a.arr)
 	dst.Cap = cap(a.arr)
+}
+
+func (a Collection) copy() Collection {
+	to := Collection{
+		typ: a.typ,
+		arr: make([]interface{}, len(a.arr)),
+	}
+	copy(to.arr, a.arr)
+	return to
 }
 
 func checkFn(fn interface{}, in []reflect.Type, out []reflect.Type) reflect.Value {

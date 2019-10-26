@@ -83,3 +83,11 @@ func TestCollection_Find(t *testing.T) {
 		t.Fail()
 	}
 }
+
+func TestCollection_Reverse(t *testing.T) {
+	var s = []string{"a", "b", "c"}
+	Collect(s).Reverse().SaveTo(&s)
+	if strings.Join(s, "") != "cba" {
+		t.Fail()
+	}
+}
