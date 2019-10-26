@@ -57,3 +57,10 @@ func TestSaveToInterface(t *testing.T) {
 		t.Fail()
 	}
 }
+
+// sort struct
+func TestCollection_Sort(t *testing.T) {
+	var s = []A{{5}, {3}, {1}, {3}, {4}}
+	Collect(s).Sort(func(l, r A) bool { return l.a > r.a }).SaveTo(&s)
+	t.Log(s)
+}

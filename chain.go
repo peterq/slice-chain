@@ -1,8 +1,10 @@
 package slice_chain
 
 import (
+	"fmt"
 	"log"
 	"reflect"
+	"sort"
 	"unsafe"
 )
 
@@ -70,6 +72,41 @@ func (a Collection) Filter(fn interface{}) Collection {
 		}
 	}
 	return to
+}
+
+func (a Collection) Sort(fn interface{}) Collection {
+	rf := checkFn(fn, []reflect.Type{a.typ, a.typ}, []reflect.Type{reflect.TypeOf(false)})
+	sort.Slice(a.arr, func(i, j int) bool {
+		l := a.arr[i]
+		r := a.arr[j]
+		ret := rf.Call([]reflect.Value{reflect.ValueOf(l), reflect.ValueOf(r)})
+		return ret[0].Bool()
+	})
+	return a
+}
+
+func checkFn(fn interface{}, in []reflect.Type, out []reflect.Type) reflect.Value {
+	rf := reflect.ValueOf(fn)
+	if rf.Kind() != reflect.Func {
+		panic("fn is not func")
+	}
+	if rf.Type().NumIn() != len(in) {
+		panic(fmt.Sprintf("need %d in param(s), got %d", len(in), rf.Type().NumIn()))
+	}
+	if rf.Type().NumOut() != len(out) {
+		panic(fmt.Sprintf("need %d out param(s), got %d", len(out), rf.Type().NumOut()))
+	}
+	for i, t := range in {
+		if rf.Type().In(i) != t {
+			panic(fmt.Sprintf("in param with the index %d need %v, got ,%v", i, t, rf.Type().In(i)))
+		}
+	}
+	for i, t := range out {
+		if rf.Type().Out(i) != t {
+			panic(fmt.Sprintf("out param with the index %d need %v, got ,%v", i, t, rf.Type().In(i)))
+		}
+	}
+	return rf
 }
 
 func (a Collection) SaveTo(ptr interface{}) {
