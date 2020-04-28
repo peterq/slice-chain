@@ -89,6 +89,15 @@ func (a Collection) Find(startIndex int, fn interface{}, target interface{}) (in
 	return
 }
 
+func (a Collection) IndexOf(v interface{}) int {
+	for i, vv := range a.arr {
+		if vv == v {
+			return i
+		}
+	}
+	return -1
+}
+
 func (a Collection) Reverse() Collection {
 	to := a.copy()
 	for i, j := 0, len(to.arr)-1; i < j; i, j = i+1, j-1 {
