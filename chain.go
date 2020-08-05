@@ -45,6 +45,15 @@ func (a Collection) Map(fn interface{}) Collection {
 	return to
 }
 
+func (a Collection) Walk(fn interface{}) Collection {
+	rFn := checkFn(fn, []reflect.Type{a.typ}, []reflect.Type{})
+
+	for _, val := range a.arr {
+		rFn.Call([]reflect.Value{reflect.ValueOf(val)})
+	}
+	return a
+}
+
 func (a Collection) Filter(fn interface{}) Collection {
 	rFn := checkFn(fn, []reflect.Type{a.typ}, []reflect.Type{reflect.TypeOf(false)})
 	to := Collection{
@@ -142,6 +151,17 @@ func (a Collection) SaveTo(ptr interface{}) {
 	dst.Data = newSlice.Pointer()
 	dst.Len = len(a.arr)
 	dst.Cap = cap(a.arr)
+}
+
+func (a Collection) Append(v interface{}) Collection {
+	var rv = reflect.ValueOf(v)
+	if rv.Type() != a.typ && // type equal
+		!(a.typ.Kind() == reflect.Interface && // impl interface
+			rv.Type().Implements(a.typ)) {
+		panic("slice element type invalid ")
+	}
+	a.arr = append(a.arr, v)
+	return a
 }
 
 func (a Collection) copy() Collection {
