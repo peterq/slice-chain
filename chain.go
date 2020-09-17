@@ -32,6 +32,36 @@ func Collect(src interface{}) Collection {
 	return target
 }
 
+func CollectMapKeys(src interface{}) Collection {
+	rs := reflect.ValueOf(src)
+	if rs.Type().Kind() != reflect.Map || rs.IsNil() {
+		panic("src is not map, or is nil")
+	}
+	target := Collection{
+		typ: rs.Type().Key(),
+		arr: make([]interface{}, rs.Len()),
+	}
+	for idx, value := range rs.MapKeys() {
+		target.arr[idx] = value.Interface()
+	}
+	return target
+}
+
+func CollectMapValues(src interface{}) Collection {
+	rs := reflect.ValueOf(src)
+	if rs.Type().Kind() != reflect.Map || rs.IsNil() {
+		panic("src is not map, or is nil")
+	}
+	target := Collection{
+		typ: rs.Type().Key(),
+		arr: make([]interface{}, rs.Len()),
+	}
+	for idx, value := range rs.MapKeys() {
+		target.arr[idx] = rs.MapIndex(value).Interface()
+	}
+	return target
+}
+
 func (a Collection) Map(fn interface{}) Collection {
 	rFn := checkFn(fn, []reflect.Type{a.typ}, []reflect.Type{reflect.TypeOf([]interface{}{}).Elem()})
 
@@ -162,6 +192,21 @@ func (a Collection) Append(v interface{}) Collection {
 	}
 	a.arr = append(a.arr, v)
 	return a
+}
+
+func (a Collection) Uniq() Collection {
+	var set = map[interface{}]bool{}
+	to := Collection{
+		typ: a.typ,
+		arr: make([]interface{}, 0, len(a.arr)),
+	}
+	for _, ele := range a.arr {
+		if !set[ele] {
+			set[ele] = true
+			to.arr = append(to.arr, ele)
+		}
+	}
+	return to
 }
 
 func (a Collection) copy() Collection {

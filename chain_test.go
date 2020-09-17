@@ -2,6 +2,7 @@ package slice_chain
 
 import (
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 	"testing"
@@ -105,5 +106,27 @@ func TestCollection_Reduce(t *testing.T) {
 
 	if r != 120 {
 		t.Fail()
+	}
+}
+
+func TestCollection_Uniq(t *testing.T) {
+	var a []A
+	Collect([]A{{1}, {2}, {3}, {3}, {5}}).
+		Uniq().SaveTo(&a)
+
+	if fmt.Sprint(a) != "[{1} {2} {3} {5}]" {
+		log.Println(a)
+		t.FailNow()
+	}
+}
+
+func TestCollectMap(t *testing.T) {
+	var a = map[string]string{
+		"a": "aa",
+		"b": "bb",
+		"c": "cc",
+	}
+	if len(CollectMapKeys(a).arr) != 3 || len(CollectMapValues(a).arr) != 3 {
+		t.FailNow()
 	}
 }
