@@ -23,6 +23,19 @@ func TestChain(t *testing.T) {
 	}
 }
 
+func TestChainInterface(t *testing.T) {
+	var a = []string{"1", "2", "3", "4", "5"}
+
+	c := Collect(a).
+		Map(func(s string) int { i, _ := strconv.Atoi(s); return i }).
+		Filter(func(i int) bool { return i%2 == 0 }).
+		Map(func(i int) string { return fmt.Sprintf("%d * %d = %d", i, i, i*i) })
+
+	if strings.Join(c.Interface().([]string), "; ") != "2 * 2 = 4; 4 * 4 = 16" {
+		t.Fail()
+	}
+}
+
 type intable interface {
 	Int() int
 }

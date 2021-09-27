@@ -173,14 +173,22 @@ func (a Collection) SaveTo(ptr interface{}) {
 		log.Println(rp.Elem().Type(), a.typ)
 		panic("slice element type invalid ")
 	}
-	newSlice := reflect.MakeSlice(rp.Type().Elem(), 0, 0)
-	for _, v := range a.arr {
-		newSlice = reflect.Append(newSlice, reflect.ValueOf(v))
+	newSlice := reflect.MakeSlice(rp.Type().Elem(), len(a.arr), len(a.arr))
+	for idx, v := range a.arr {
+		newSlice.Index(idx).Set(reflect.ValueOf(v))
 	}
 	dst := (*reflect.SliceHeader)(unsafe.Pointer(reflect.ValueOf(ptr).Pointer()))
 	dst.Data = newSlice.Pointer()
 	dst.Len = len(a.arr)
 	dst.Cap = cap(a.arr)
+}
+
+func (a Collection) Interface() interface{} {
+	newSlice := reflect.MakeSlice(reflect.SliceOf(a.typ), len(a.arr), len(a.arr))
+	for idx, v := range a.arr {
+		newSlice.Index(idx).Set(reflect.ValueOf(v))
+	}
+	return newSlice.Interface()
 }
 
 func (a Collection) Append(v interface{}) Collection {
